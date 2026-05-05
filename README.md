@@ -1,71 +1,89 @@
 # Redux Toolkit Ecommerce
 
-A production-style ecommerce product listing built to demonstrate real-world Redux Toolkit patterns.
+A production-style ecommerce product listing built to demonstrate real-world Redux Toolkit patterns — async data fetching, global state management, search filtering, and responsive UI.
 
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.0-purple)
 ![Vite](https://img.shields.io/badge/Vite-5.0-yellow)
 
 ## Live Demo
-🔗 [View Live](#) ← add after deploy
+
+🔗 [View Live](#)
 
 ---
 
 ## What This Demonstrates
 
-- `createAsyncThunk` — API call lives in Redux, not component
-- `extraReducers` — handles pending, fulfilled, rejected automatically
-- `createSlice` — state + reducers in one place
-- `useSelector` + `useDispatch` — clean component integration
-- Search — filtered inside Redux, not component level
-- Responsive CSS Grid — 4 → 3 → 2 → 1 columns
+| Concept | Implementation |
+|---------|---------------|
+| `createAsyncThunk` | API call lives in Redux, not component |
+| `extraReducers` | Handles pending, fulfilled, rejected states |
+| `createSlice` | State + reducers in one place |
+| `useSelector` | Component reads from store |
+| `useDispatch` | Component dispatches actions |
+| Search | Filtered inside Redux, not component |
+| Responsive Grid | 4 → 3 → 2 → 1 columns |
 
 ---
 
 ## Architecture
-main.jsx
-└── Provider (wraps app with store)
-└── App.jsx
-├── dispatches fetchProducts() on mount
-├── dispatches setSearch() on input
-└── reads filtered, loading, error from store
-store.js
-└── products slice
-├── fetchProducts (createAsyncThunk → API call)
-├── extraReducers (pending → loading, fulfilled → data, rejected → error)
-└── setSearch (filters data inside Redux)
+
+**Component layer** — App.jsx dispatches actions and reads from store via useSelector. No business logic lives here.
+
+**State layer** — productsSlice manages all state: fetching products via createAsyncThunk, handling loading/error/data via extraReducers, and filtering via setSearch reducer.
+
+**Store** — Single configureStore instance wrapped around the app via Provider.
+
 ---
 
 ## Folder Structure
+
+```
 src/
 ├── slices/
-│   └── productsSlice.js   ← async thunk + extraReducers + search
-├── store.js               ← configureStore
-├── App.jsx                ← UI + dispatch + useSelector
-├── App.css                ← responsive grid
-└── main.jsx               ← Provider setup
+│   └── productsSlice.js
+├── store.js
+├── App.jsx
+├── App.css
+└── main.jsx
+```
 
 ---
 
-## Key Concepts
+## Key Code
 
-### extraReducers — why it matters
+### API call in Redux — not component
+
+```javascript
+export const fetchProducts = createAsyncThunk(
+  'products/fetchProducts',
+  async () => {
+    const res = await fetch('https://fakestoreapi.com/products')
+    return res.json()
+  }
+)
+```
+
+### extraReducers — handles all 3 async states
+
 ```javascript
 extraReducers: (builder) => {
   builder
     .addCase(fetchProducts.pending, (state) => {
-      state.loading = true   // show spinner
+      state.loading = true
     })
     .addCase(fetchProducts.fulfilled, (state, action) => {
-      state.data = action.payload  // store data
+      state.data = action.payload
+      state.filtered = action.payload
     })
     .addCase(fetchProducts.rejected, (state, action) => {
-      state.error = action.error.message  // show error
+      state.error = action.error.message
     })
 }
 ```
 
 ### Search inside Redux — not component
+
 ```javascript
 setSearch: (state, action) => {
   state.searchQuery = action.payload
@@ -78,15 +96,6 @@ setSearch: (state, action) => {
 
 ---
 
-## Tech Stack
-
-- React 18
-- Redux Toolkit
-- Vite
-- CSS Grid
-
----
-
 ## Run Locally
 
 ```bash
@@ -95,3 +104,9 @@ cd redux-toolkit-ecommerce
 npm install
 npm run dev
 ```
+
+---
+
+## Tech Stack
+
+React 18 · Redux Toolkit · Vite · CSS Grid
